@@ -23,4 +23,9 @@ public class TidesService {
         TimedValue[] tides = restTemplate.getForObject("http://localhost:8080/tides/hourly/" + location, TimedValue[].class);
         return Arrays.asList(tides);
     }
+
+    public List<String> getStations() {
+        String[] stations = restTemplate.getForObject("http://localhost:8080/tides/stations", String[].class);
+        return Arrays.asList(stations);
+    }
 }

@@ -14,10 +14,13 @@ import com.googlecode.wickedcharts.wicket6.highcharts.Chart;
 import es.tidetim.tideengine.models.TimedValue;
 import org.apache.wicket.markup.html.WebPage;
 import org.apache.wicket.markup.html.basic.Label;
+import org.apache.wicket.markup.html.form.DropDownChoice;
+import org.apache.wicket.markup.html.form.Form;
 import org.apache.wicket.markup.html.list.ListItem;
 import org.apache.wicket.markup.html.list.ListView;
 import org.apache.wicket.model.IModel;
 import org.apache.wicket.model.LoadableDetachableModel;
+import org.apache.wicket.model.PropertyModel;
 import org.apache.wicket.request.mapper.parameter.PageParameters;
 import org.apache.wicket.spring.injection.annot.SpringBean;
 import uk.co.crystalmark.components.DateLabel;
@@ -34,6 +37,8 @@ public class HomePage extends WebPage {
     TidesService tidesService;
 
     private static final String[] xaxis = new String[]{"00:00", "01:00", "02:00", "03:00", "04:00", "05:00", "06:00", "07:00", "08:00", "09:00", "10:00", "11:00", "12:00", "13:00", "14:00", "15:00", "16:00", "17:00", "18:00", "19:00", "20:00", "21:00", "22:00", "23:00"};
+
+    private String station = "Leith, Scotland";
 
     public HomePage(final PageParameters parameters) {
         super(parameters);
@@ -90,9 +95,32 @@ public class HomePage extends WebPage {
 
         add(new Chart("chart", options));
 
+        Form form = new Form("form");
+        add(form);
+
+        DropDownChoice<String> ddc =
+                new DropDownChoice<>("station",
+                        new PropertyModel<>(this, "station"),
+                        new LoadableDetachableModel<List<String>>() {
+                            @Override
+                            protected List<String> load() {
+                                return tidesService.getStations();
+                            }
+                        }
+                );
+        form.add(ddc);
+
     }
 
     private List<Number> getHeights(List<TimedValue> values) {
         return values.stream().map(TimedValue::getValue).collect(Collectors.toList());
+    }
+
+    public String getStation() {
+        return station;
+    }
+
+    public void setStation(String station) {
+        this.station = station;
     }
 }
