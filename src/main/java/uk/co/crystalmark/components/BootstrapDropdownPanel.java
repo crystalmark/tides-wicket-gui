@@ -1,5 +1,7 @@
 package uk.co.crystalmark.components;
 
+import java.util.List;
+
 import org.apache.wicket.Component;
 import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.apache.wicket.ajax.markup.html.AjaxLink;
@@ -12,8 +14,6 @@ import org.apache.wicket.markup.html.panel.Panel;
 import org.apache.wicket.model.IModel;
 import org.apache.wicket.model.LoadableDetachableModel;
 import org.apache.wicket.model.util.ListModel;
-
-import java.util.List;
 
 public abstract class BootstrapDropdownPanel<T> extends Panel implements ILabelProvider<T> {
     private static final long serialVersionUID = 1L;
@@ -28,14 +28,12 @@ public abstract class BootstrapDropdownPanel<T> extends Panel implements ILabelP
     }
 
     public BootstrapDropdownPanel(String id, IModel<T> model, List<T> availableList) {
-        this(id, model, new ListModel(availableList));
+        this(id, model, new ListModel<T>(availableList));
     }
 
     protected void onInitialize() {
         super.onInitialize();
-        LoadableDetachableModel labelModel = new LoadableDetachableModel() {
-            private static final long serialVersionUID = 1L;
-
+        LoadableDetachableModel<String> labelModel = new LoadableDetachableModel<String>() {
             protected String load() {
                 return BootstrapDropdownPanel.this.model.getObject() == null ? "Please select" : (BootstrapDropdownPanel.this.renderer == null ? BootstrapDropdownPanel.this.model.getObject().toString() : BootstrapDropdownPanel.this.renderer.getDisplayValue(BootstrapDropdownPanel.this.model.getObject()) + "");
             }
@@ -45,7 +43,7 @@ public abstract class BootstrapDropdownPanel<T> extends Panel implements ILabelP
             private static final long serialVersionUID = 1L;
 
             protected void populateItem(final ListItem<T> item) {
-                AjaxLink link = new AjaxLink("link") {
+                AjaxLink<Void> link = new AjaxLink<Void>("link") {
                     private static final long serialVersionUID = 1L;
 
                     public void onClick(AjaxRequestTarget target) {
@@ -54,7 +52,7 @@ public abstract class BootstrapDropdownPanel<T> extends Panel implements ILabelP
                     }
                 };
                 item.add(new Component[]{link});
-                LoadableDetachableModel labelModel = new LoadableDetachableModel() {
+                LoadableDetachableModel<String> labelModel = new LoadableDetachableModel<String>() {
                     private static final long serialVersionUID = 1L;
 
                     protected String load() {

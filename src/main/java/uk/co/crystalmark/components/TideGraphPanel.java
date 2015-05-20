@@ -20,30 +20,25 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 public class TideGraphPanel extends Panel {
-    private static final DateTimeFormatter TIME_FORMATTER = DateTimeFormatter.ISO_TIME;
+    private static final DateTimeFormatter TIME_FORMATTER = DateTimeFormatter.ofPattern("HH");
 
     public TideGraphPanel(String id, IModel<List<TimedValue>> timesModel, IModel<String> locationModel) {
         super(id, timesModel);
 
         Options options = new Options();
 
-        options
-                .setChartOptions(new ChartOptions()
+        options.setChartOptions(new ChartOptions()
                         .setType(SeriesType.AREASPLINE));
 
-        options
-                .setTitle(new Title("Tide heights at " + locationModel.getObject()));
+        options.setTitle(new Title("Tide heights at " + locationModel.getObject()));
 
-        options
-                .setxAxis(new Axis()
+        options.setxAxis(new Axis()
                         .setCategories(getTimes(timesModel.getObject())));
 
-        options
-                .setyAxis(new Axis()
+        options.setyAxis(new Axis()
                         .setTitle(new Title("Tide Height (m)")));
 
-        options
-                .setLegend(new Legend()
+        options.setLegend(new Legend()
                         .setLayout(LegendLayout.VERTICAL)
                         .setAlign(HorizontalAlignment.RIGHT)
                         .setVerticalAlign(VerticalAlignment.TOP)
@@ -51,8 +46,7 @@ public class TideGraphPanel extends Panel {
                         .setY(100)
                         .setBorderWidth(0));
 
-        options
-                .addSeries(new SimpleSeries()
+        options.addSeries(new SimpleSeries()
                         .setName("Height (m)")
                         .setData(getHeights(timesModel.getObject())
                         ));
