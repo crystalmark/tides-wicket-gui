@@ -16,15 +16,14 @@ import org.apache.wicket.markup.html.panel.Panel;
 import org.apache.wicket.model.IModel;
 
 import java.time.format.DateTimeFormatter;
-import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
 public class TideGraphPanel extends Panel {
     private static final DateTimeFormatter TIME_FORMATTER = DateTimeFormatter.ISO_TIME;
 
-    public TideGraphPanel(String id, IModel<List<TimedValue>> model) {
-        super(id, model);
+    public TideGraphPanel(String id, IModel<List<TimedValue>> timesModel, IModel<String> locationModel) {
+        super(id, timesModel);
 
         Options options = new Options();
 
@@ -33,11 +32,11 @@ public class TideGraphPanel extends Panel {
                         .setType(SeriesType.AREASPLINE));
 
         options
-                .setTitle(new Title("Tide heights."));
+                .setTitle(new Title("Tide heights at " + locationModel.getObject()));
 
         options
                 .setxAxis(new Axis()
-                        .setCategories(getTimes(model.getObject())));
+                        .setCategories(getTimes(timesModel.getObject())));
 
         options
                 .setyAxis(new Axis()
@@ -55,7 +54,7 @@ public class TideGraphPanel extends Panel {
         options
                 .addSeries(new SimpleSeries()
                         .setName("Height (m)")
-                        .setData(getHeights(model.getObject())
+                        .setData(getHeights(timesModel.getObject())
                         ));
 
         add(new Chart("chart", options));

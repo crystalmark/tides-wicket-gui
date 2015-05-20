@@ -4,8 +4,6 @@ import es.tidetim.tideengine.models.TimedValue;
 import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.apache.wicket.markup.html.WebPage;
 import org.apache.wicket.markup.html.basic.Label;
-import org.apache.wicket.markup.html.form.DropDownChoice;
-import org.apache.wicket.markup.html.form.Form;
 import org.apache.wicket.markup.html.list.ListItem;
 import org.apache.wicket.markup.html.list.ListView;
 import org.apache.wicket.model.IModel;
@@ -13,12 +11,14 @@ import org.apache.wicket.model.LoadableDetachableModel;
 import org.apache.wicket.model.PropertyModel;
 import org.apache.wicket.request.mapper.parameter.PageParameters;
 import org.apache.wicket.spring.injection.annot.SpringBean;
+import org.apache.wicket.util.string.StringValue;
+import uk.co.crystalmark.components.BootstrapDropdownPanel;
 import uk.co.crystalmark.components.DateLabel;
 import uk.co.crystalmark.components.TideGraphPanel;
 import uk.co.crystalmark.services.TidesService;
-import uk.co.crystalmark.wicket.components.BootstrapDropdownPanel;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class HomePage extends WebPage {
     private static final long serialVersionUID = 1L;
@@ -31,11 +31,22 @@ public class HomePage extends WebPage {
     public HomePage(final PageParameters parameters) {
         super(parameters);
 
+        setStation(parameters);
+
+        LoadableDetachableModel<List<String>> stationsModel = new LoadableDetachableModel<List<String>>() {
+            @Override
+            protected List<String> load() {
+                return tidesService.getStations().stream().filter(s -> s.matches(".*(England|Scotland|Wales).*")).collect(Collectors.toList());
+            }
+        };
+
+        IModel<String> stationModel = new PropertyModel<>(this, "station");
+
         IModel<List<TimedValue>> tidesModel = new LoadableDetachableModel<List<TimedValue>>() {
 
             @Override
             protected List<TimedValue> load() {
-                return tidesService.getToday("Leith");
+                return tidesService.getToday(HomePage.this.station);
             }
         };
 
@@ -49,31 +60,33 @@ public class HomePage extends WebPage {
         });
 
 
-        LoadableDetachableModel<List<String>> stationsModel = new LoadableDetachableModel<List<String>>() {
-            @Override
-            protected List<String> load() {
-                return tidesService.getStations();
-            }
-        };
-
-        BootstrapDropdownPanel<String> ddc = new BootstrapDropdownPanel<String>("stations", new PropertyModel<String>(this, "station"), stationsModel) {
-            @Override
-            public void onChange(AjaxRequestTarget ajaxRequestTarget, String s) {
-
-            }
-        };
-
-        add(ddc);
-
-        IModel<List<TimedValue>> hourlyTidesModel = new LoadableDetachableModel<List<TimedValue>>() {
+        final IModel<List<TimedValue>> hourlyTidesModel = new LoadableDetachableModel<List<TimedValue>>() {
 
             @Override
             protected List<TimedValue> load() {
-                return tidesService.getHourly("Leith");
+                return tidesService.getHourly(HomePage.this.station);
             }
         };
 
-        add(new TideGraphPanel("chart", hourlyTidesModel));
+        add(new TideGraphPanel("chart", hourlyTidesModel, stationModel));
+
+        BootstrapDropdownPanel<String> ddc = new BootstrapDropdownPanel<String>("stations", stationModel, stationsModel) {
+            @Override
+            public void onChange(AjaxRequestTarget target, String station) {
+                PageParameters parameters = new PageParameters();
+                parameters.set("location", station);
+                setResponsePage(HomePage.class, parameters);
+            }
+        };
+        add(ddc);
+
+    }
+
+    private void setStation(PageParameters parameters) {
+        StringValue location = parameters.get("location");
+        if (!location.isNull()) {
+            setStation(location.toOptionalString());
+        }
     }
 
     public String getStation() {
