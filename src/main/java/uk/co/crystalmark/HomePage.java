@@ -1,6 +1,7 @@
 package uk.co.crystalmark;
 
 import es.tidetim.tideengine.models.TimedValue;
+import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.apache.wicket.markup.html.WebPage;
 import org.apache.wicket.markup.html.basic.Label;
 import org.apache.wicket.markup.html.form.DropDownChoice;
@@ -15,6 +16,7 @@ import org.apache.wicket.spring.injection.annot.SpringBean;
 import uk.co.crystalmark.components.DateLabel;
 import uk.co.crystalmark.components.TideGraphPanel;
 import uk.co.crystalmark.services.TidesService;
+import uk.co.crystalmark.wicket.components.BootstrapDropdownPanel;
 
 import java.util.List;
 
@@ -46,20 +48,22 @@ public class HomePage extends WebPage {
             }
         });
 
-        Form form = new Form("form");
-        add(form);
 
-        DropDownChoice<String> ddc =
-                new DropDownChoice<>("station",
-                        new PropertyModel<>(this, "station"),
-                        new LoadableDetachableModel<List<String>>() {
-                            @Override
-                            protected List<String> load() {
-                                return tidesService.getStations();
-                            }
-                        }
-                );
-        form.add(ddc);
+        LoadableDetachableModel<List<String>> stationsModel = new LoadableDetachableModel<List<String>>() {
+            @Override
+            protected List<String> load() {
+                return tidesService.getStations();
+            }
+        };
+
+        BootstrapDropdownPanel<String> ddc = new BootstrapDropdownPanel<String>("stations", new PropertyModel<String>(this, "station"), stationsModel) {
+            @Override
+            public void onChange(AjaxRequestTarget ajaxRequestTarget, String s) {
+
+            }
+        };
+
+        add(ddc);
 
         IModel<List<TimedValue>> hourlyTidesModel = new LoadableDetachableModel<List<TimedValue>>() {
 
