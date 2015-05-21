@@ -11,6 +11,10 @@
     <script src="//html5shim.googlecode.com/svn/trunk/html5.js"></script>
     <![endif]-->
     <link href="css/styles.css" rel="stylesheet">
+    <link href="css/bootstrap-datepicker3.css" rel="stylesheet">
+    <script src="js/bootstrap-datepicker.js"></script>
+    <script src="js/locales/bootstrap-datepicker.en-GB.min.js" charset="UTF-8"></script>
+    <script src="js/locales/bootstrap-datepicker.uk.min.js" charset="UTF-8"></script>
 </head>
 <body>
 <!-- Wrap all page content here -->
@@ -38,6 +42,12 @@
                             <li><a href="#">Poole</a></li>
 
                         </ul>
+                    </li>
+                    <li>
+                        <form wicket:id="dateForm">
+                            <input type="text" class="datepicker" data-provide="datepicker"
+                                         data-date-format="yyyy-mm-dd" wicket:id="date">
+                        </form>
                     </li>
                 </ul>
             </div>

@@ -1,5 +1,7 @@
 package uk.co.crystalmark;
 
+import org.apache.wicket.ConverterLocator;
+import org.apache.wicket.IConverterLocator;
 import org.apache.wicket.Page;
 import org.apache.wicket.protocol.http.WebApplication;
 import org.apache.wicket.spring.injection.annot.SpringComponentInjector;
@@ -11,6 +13,9 @@ import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.stereotype.Component;
+import uk.co.crystalmark.config.LocalDateConverter;
+
+import java.time.LocalDate;
 
 @Component
 @EnableAutoConfiguration
@@ -55,5 +60,12 @@ public class WicketWebApplication extends WebApplication {
         getComponentInstantiationListeners().add(
                 new SpringComponentInjector(this, applicationContext));
         getMarkupSettings().setStripWicketTags(true);
+    }
+
+    @Override
+    protected IConverterLocator newConverterLocator() {
+        ConverterLocator locator = (ConverterLocator) super.newConverterLocator();
+        locator.set(LocalDate.class, new LocalDateConverter());
+        return locator;
     }
 }

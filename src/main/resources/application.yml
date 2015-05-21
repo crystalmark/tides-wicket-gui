@@ -4,4 +4,7 @@ server:
 logging:
     level:
         uk.co.crystalmark: DEBUG
+        
+tidetimes:
+    url: "http://localhost:8089/"
 
