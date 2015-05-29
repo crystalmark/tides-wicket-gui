@@ -1,21 +1,22 @@
 package uk.co.crystalmark;
 
 import java.time.LocalDate;
+import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
 
 import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.apache.wicket.ajax.form.AjaxFormComponentUpdatingBehavior;
-import org.apache.wicket.ajax.form.OnChangeAjaxBehavior;
+import org.apache.wicket.datetime.markup.html.form.DateTextField;
 import org.apache.wicket.markup.html.WebPage;
-import org.apache.wicket.markup.html.form.Form;
-import org.apache.wicket.markup.html.form.TextField;
 import org.apache.wicket.model.IModel;
 import org.apache.wicket.model.LoadableDetachableModel;
 import org.apache.wicket.model.PropertyModel;
 import org.apache.wicket.request.mapper.parameter.PageParameters;
 import org.apache.wicket.spring.injection.annot.SpringBean;
 import org.apache.wicket.util.string.StringValue;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import uk.co.crystalmark.components.BootstrapDropdownPanel;
 import uk.co.crystalmark.components.TideGraphPanel;
@@ -26,6 +27,8 @@ import es.tidetim.tideengine.models.TimedValue;
 
 public class HomePage extends WebPage {
     private static final long serialVersionUID = 1L;
+    
+    private static final Logger LOG = LoggerFactory.getLogger(HomePage.class);
 
     @SpringBean
     TidesService tidesService;
@@ -33,12 +36,12 @@ public class HomePage extends WebPage {
     private String station = "Leith, Scotland";
 
     private LocalDate date = LocalDate.now();
-
+    
     public HomePage(final PageParameters parameters) {
         super(parameters);
 
         setStation(parameters);
-        setDate(parameters);
+        setDate(parameters);    	
 
         LoadableDetachableModel<List<String>> stationsModel = new LoadableDetachableModel<List<String>>() {
 			@Override
@@ -49,7 +52,7 @@ public class HomePage extends WebPage {
 
         IModel<String> stationModel = new PropertyModel<>(this, "station");
 
-        IModel<LocalDate> dateModel = new PropertyModel<>(this, "date");
+        IModel<Date> dateModel = new DateToLocalDateModel(new PropertyModel<LocalDate>(this, "date"));
 
         IModel<List<TimedValue>> tidesModel = new LoadableDetachableModel<List<TimedValue>>() {
 			private static final long serialVersionUID = 1L;
@@ -84,10 +87,8 @@ public class HomePage extends WebPage {
         };
         add(ddc);
         
-        Form<Void> dateForm = new Form<>("dateForm");
-        add(dateForm);
-
-        dateForm.add(new TextField<LocalDate>("date", dateModel).add(new AjaxFormComponentUpdatingBehavior("onchange"){
+        
+		add(DateTextField.forDatePattern("date", dateModel, "yyyy-MM-dd" ).add(new AjaxFormComponentUpdatingBehavior("onupdate"){
 
             @Override
             protected void onUpdate(final AjaxRequestTarget target){
@@ -96,14 +97,20 @@ public class HomePage extends WebPage {
                 parameters.set("date", LocalDateConverter.FORMATTER.format(date));
                 setResponsePage(HomePage.class, parameters);
             }
-        }).setOutputMarkupId(true));
+            
+            @Override
+            protected void onError(AjaxRequestTarget target, RuntimeException e){
+            	LOG.error("Unable to proccess new date", e);
+            }
+        }));
 
     }
 
     private void setDate(PageParameters parameters) {
-        StringValue date = parameters.get("date");
-        if (!date.isNull()) {
-            setDate(LocalDate.parse(date.toOptionalString(), LocalDateConverter.FORMATTER));
+        StringValue dateValue = parameters.get("date");
+        if (!dateValue.isNull()) {
+        	String dateString = dateValue.toString();
+            setDate(LocalDate.parse(dateString, LocalDateConverter.FORMATTER));
         }		
 	}
 
